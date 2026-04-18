@@ -1,30 +1,32 @@
 import discord
 from discord.ext import commands
 import os
-import openai   # 👈 add this
+from openai import OpenAI
 
+# 🔑 Create OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# ⚙️ Discord setup
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# 👇 AI setup
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
+# ✅ Bot ready
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
-# 👇 your commands
+# 🏓 Test command
 @bot.command()
 async def ping(ctx):
     await ctx.send("Pong!")
 
-# 👇 ADD THE AI COMMAND HERE
+# 🧠 AI command
 @bot.command()
 async def ai(ctx, *, prompt):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful Discord bot."},
@@ -32,12 +34,12 @@ async def ai(ctx, *, prompt):
             ]
         )
 
-        reply = response["choices"][0]["message"]["content"]
+        reply = response.choices[0].message.content
         await ctx.send(reply)
 
     except Exception as e:
         await ctx.send("Error with AI.")
         print(e)
 
-# 👇 ALWAYS keep this at the VERY BOTTOM
+# 🚀 Run bot (KEEP THIS LAST)
 bot.run(os.getenv("TOKEN"))
